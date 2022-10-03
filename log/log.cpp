@@ -1,5 +1,6 @@
 #include "log.h"
 
+#include <stdarg.h>
 #include <string.h>
 #include <sys/time.h>
 #include <time.h>
@@ -22,7 +23,7 @@ bool Log::init(char* log_name, int max_buf_size, int max_lines,
     is_async_ = true;
     log_queue_ = new BlockQueue<std::string>(max_queue_size_);
     pthread_t tid;
-    pthread_create(&tid, NULL, async_write, NULL);
+    pthread_create(&tid, NULL, async_write_process, NULL);
   }
 
   // 获取系统时间
@@ -66,18 +67,65 @@ bool Log::write_log(int level, const char* format, ...) {
   switch (level) {
     case 0:
       strcpy(level_str, "[debug]");
+      break;
     case 1:
       strcpy(level_str, "[info]");
+      break;
     case 2:
       strcpy(level_str, "[warning]");
+      break;
     case 3:
       strcpy(level_str, "[error]");
+      break;
+    default:
+      strcpy(level_str, "[info]");
   }
 
   // 写入log time
   mutex_.lock();
   cur_lines_++;
-  if (day_ != my_tm.tm_mday || cur_lines_ == max_lines_) {
+  if (day_ != my_tm.tm_mday || cur_lines_ % max_lines_ == 0) {
+    char new_log[256] = "0";
+    fflush(p_file_);
+    fclose(p_file_);
+    char tail[16] = {0};
+    snprintf(tail, 16, "%d_%02d_%02d_", my_tm.tm_year + 1900, my_tm.tm_mon + 1,
+             my_tm.tm_mday);
+
+    if (day_ != my_tm.tm_mday) {
+      snprintf(new_log, 255, "%s%s%s", path_name_, tail, log_name_);
+      day_ = my_tm.tm_mday;
+      cur_lines_ = 0;
+    } else {
+      snprintf(new_log, 255, "%s%s%s.%lld", path_name_, tail, log_name_,
+               cur_lines_ / max_lines_);
+    }
+    p_file_ = fopen(new_log, "a");
+  }
+  mutex_.unlock();
+  va_list valist;
+  va_start(valist, format);
+
+  std::string log_str;
+
+  mutex_.lock();
+  //写入的具体时间内容格式
+  int n = snprintf(buf_, 48, "%d-%02d-%02d %02d:%02d:%02d.%06ld %s ",
+                   my_tm.tm_year + 1900, my_tm.tm_mon + 1, my_tm.tm_mday,
+                   my_tm.tm_hour, my_tm.tm_min, my_tm.tm_sec, now.tv_usec,
+                   level_str);
+  int m = vsnprintf(buf_ + n, max_buf_size_ - 1, format, valist);
+  buf_[n + m] = '\n';
+  buf_[n + m + 1] = '\0';
+  log_str = buf_;
+
+  mutex_.unlock();
+
+  if (is_async_ && !log_queue_->isfull()) {
+    log_queue_->push(log_str);
   } else {
+    mutex_.lock();
+    sync_write(log_str);
+    mutex_.unlock();
   }
 }

@@ -46,9 +46,24 @@ class Log {
   bool write_log(int level, const char* format, ...);
 
  private:
-  static void* async_write(void* args);
+  static void* async_write_process(void* args) {
+    Log::getinstance()->async_write();
+  }
 
-  static void* sync_write(void* args);
+  void* async_write() {
+    string single_log;
+    while (log_queue_->pop(single_log)) {
+      mutex_.lock();
+      fputs(single_log.c_str(), p_file_);
+      mutex_.unlock();
+    }
+  }
+
+  void* sync_write(string log_str) {
+    mutex_.lock();
+    fputs(log_str.c_str(), p_file_);
+    mutex_.unlock();
+  }
 };
 
 #define LOG_DEBUG(format, ...) \

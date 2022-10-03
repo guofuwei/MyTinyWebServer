@@ -1,9 +1,31 @@
 #ifndef __LOCK_H__
 #define __LOCK_H__
 
+#include <semaphore.h>
+
 #include <exception>
 
 #include "pthread.h"
+
+class Sem {
+ private:
+  sem_t sem_;
+
+ public:
+  Sem() {
+    if (sem_init(&sem_, 0, 0) != 0) {
+      throw std::exception();
+    }
+  }
+  Sem(int num) {
+    if (sem_init(&sem_, 0, num) != 0) {
+      throw std::exception();
+    }
+  }
+  ~Sem() { sem_destroy(&sem_); }
+  bool wait() { return sem_wait(&sem_) == 0; }
+  bool post() { return sem_post(&sem_) == 0; }
+};
 
 class Locker {
  private:
