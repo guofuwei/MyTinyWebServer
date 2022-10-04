@@ -10,10 +10,9 @@
 
 using namespace std;
 
-class connection_pool {
+class ConnectionPool {
  private:
-  string Url;
-  string Port;
+  unsigned int Port;
   string Database;
   string Host;
   string User;
@@ -21,7 +20,7 @@ class connection_pool {
 
  private:
   Locker mutex_;
-  list<MYSQL*> connList;
+  list<MYSQL*> conn_list_;
   Sem sem_;
 
  private:
@@ -30,18 +29,28 @@ class connection_pool {
   unsigned int FreeConn;
 
  private:
-  connection_pool();
-  ~connection_pool();
+  ConnectionPool() { FreeConn = CurConn = 0; };
+  ~ConnectionPool() { destroyPool(); }
 
  public:
-  static connection_pool* getInstance();
-  void init(string url, string port, string database, string user,
-            string password, string host);
+  static ConnectionPool* getInstance();
+  void init(unsigned int port, string database, string user, string password,
+            unsigned int max_conn, string host);
 
   MYSQL* getConnection();
-  bool ReleaseConnection(MYSQL* conn);
+  bool releaseConnection(MYSQL* conn);
   int getFreeConn();
   void destroyPool();
+};
+
+class ConnectionRAII {
+ private:
+  MYSQL* conn_;
+  ConnectionPool* pool_;
+
+ public:
+  ConnectionRAII(MYSQL** conn, ConnectionPool* pool);
+  ~ConnectionRAII();
 };
 
 #endif

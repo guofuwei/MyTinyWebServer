@@ -67,12 +67,12 @@ class Log {
 };
 
 #define LOG_DEBUG(format, ...) \
-  Log::getinstance()->write_log(0, format, ##__VA__ARGS__)
+  Log::getinstance()->write_log(0, format, ##__VA_ARGS__)
 #define LOG_INFO(format, ...) \
-  Log::getinstance()->write_log(1, format, ##__VA__ARGS__)
+  Log::getinstance()->write_log(1, format, ##__VA_ARGS__)
 #define LOG_WARNING(format, ...) \
-  Log::getinstance()->write_log(2, format, ##__VA__ARGS__)
+  Log::getinstance()->write_log(2, format, ##__VA_ARGS__)
 #define LOG_ERROR(format, ...) \
-  Log::getinstance()->write_log(3, format, ##__VA__ARGS__)
+  Log::getinstance()->write_log(3, format, ##__VA_ARGS__)
 
 #endif
