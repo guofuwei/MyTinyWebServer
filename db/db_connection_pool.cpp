@@ -2,12 +2,12 @@
 
 #include "../log/log.h"
 
-ConnectionPool* ConnectionPool::getInstance() {
+ConnectionPool* ConnectionPool::GetInstance() {
   static ConnectionPool conn_pool;
   return &conn_pool;
 }
 
-void ConnectionPool::init(unsigned int port, string database, string user,
+void ConnectionPool::Init(unsigned int port, string database, string user,
                           string password, unsigned int max_conn = 100,
                           string host = "localhost") {
   if (max_conn <= 0) {
@@ -40,7 +40,7 @@ void ConnectionPool::init(unsigned int port, string database, string user,
   mutex_.unlock();
 }
 
-MYSQL* ConnectionPool::getConnection() {
+MYSQL* ConnectionPool::GetConnection() {
   MYSQL* conn = nullptr;
   if (conn_list_.empty()) {
     LOG_WARNING("%s:%s", "db_connection_pool", "db_pool busy");
@@ -56,7 +56,7 @@ MYSQL* ConnectionPool::getConnection() {
   return conn;
 }
 
-bool ConnectionPool::releaseConnection(MYSQL* conn) {
+bool ConnectionPool::ReleaseConnection(MYSQL* conn) {
   if (NULL == conn) return false;
   mutex_.lock();
   conn_list_.push_back(conn);
@@ -67,9 +67,9 @@ bool ConnectionPool::releaseConnection(MYSQL* conn) {
   return true;
 }
 
-int ConnectionPool::getFreeConn() { return FreeConn; }
+int ConnectionPool::GetFreeConn() { return FreeConn; }
 
-void ConnectionPool::destroyPool() {
+void ConnectionPool::DestroyPool() {
   mutex_.lock();
   if (!conn_list_.empty()) {
     list<MYSQL*>::iterator it;
@@ -86,8 +86,8 @@ void ConnectionPool::destroyPool() {
 
 ConnectionRAII::ConnectionRAII(MYSQL** conn, ConnectionPool* pool) {
   pool_ = pool;
-  conn_ = pool->getConnection();
+  conn_ = pool->GetConnection();
   *conn = conn_;
 }
 
-ConnectionRAII::~ConnectionRAII() { pool_->releaseConnection(conn_); }
+ConnectionRAII::~ConnectionRAII() { pool_->ReleaseConnection(conn_); }

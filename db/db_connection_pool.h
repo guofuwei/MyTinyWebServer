@@ -30,17 +30,17 @@ class ConnectionPool {
 
  private:
   ConnectionPool() { FreeConn = CurConn = 0; };
-  ~ConnectionPool() { destroyPool(); }
+  ~ConnectionPool() { DestroyPool(); }
 
  public:
-  static ConnectionPool* getInstance();
-  void init(unsigned int port, string database, string user, string password,
+  static ConnectionPool* GetInstance();
+  void Init(unsigned int port, string database, string user, string password,
             unsigned int max_conn, string host);
 
-  MYSQL* getConnection();
-  bool releaseConnection(MYSQL* conn);
-  int getFreeConn();
-  void destroyPool();
+  MYSQL* GetConnection();
+  bool ReleaseConnection(MYSQL* conn);
+  int GetFreeConn();
+  void DestroyPool();
 };
 
 class ConnectionRAII {

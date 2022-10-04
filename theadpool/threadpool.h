@@ -4,9 +4,9 @@
 
 #include <list>
 
+#include "../db/db_connection_pool.h"
 #include "../lock/locker.h"
 #include "../log/log.h"
-#include "../mysql/db_connection_pool.h"
 
 using namespace std;
 
@@ -29,9 +29,9 @@ class ThreadPool {
     delete[] pthread_t_array_;
     is_stop_ = true;
   }
-  static void* worker(void* arg);
-  bool append(T* request);
-  void run();
+  static void* Worker(void* arg);
+  bool Append(T* request);
+  void Run();
 };
 
 template <typename T>
@@ -46,7 +46,7 @@ ThreadPool<T>::ThreadPool(ConnectionPool* db_pool, unsigned int max_thread,
   kMaxThread = max_thread;
   pthread_t_array_ = new pthread_t[max_thread];
   for (int i = 0; i < max_thread; i++) {
-    if (pthread_create(&pthread_t_array_[i], NULL, worker, this) != 0) {
+    if (pthread_create(&pthread_t_array_[i], NULL, Worker, this) != 0) {
       LOG_ERROR("%s:%s", "threadpool", "create worker thread error");
       exit(1);
     }
@@ -58,14 +58,14 @@ ThreadPool<T>::ThreadPool(ConnectionPool* db_pool, unsigned int max_thread,
 }
 
 template <typename T>
-void* ThreadPool<T>::worker(void* arg) {
+void* ThreadPool<T>::Worker(void* arg) {
   ThreadPool* pool = (ThreadPool*)arg;
   pool->run();
   return pool;
 }
 
 template <typename T>
-void ThreadPool<T>::run() {
+void ThreadPool<T>::Run() {
   while (!is_stop_) {
     sem_.wait();
     mutex_.lock();
@@ -78,12 +78,12 @@ void ThreadPool<T>::run() {
     mutex.unlock();
     if (!request) continue;
     ConnectionRAII mysqlconn(&request->db, db_pool_);
-    request->process();
+    request->Process();
   }
 }
 
 template <typename T>
-bool ThreadPool<T>::append(T* request) {
+bool ThreadPool<T>::Append(T* request) {
   if (request_list_.size() < kMaxRequest) {
     mutex_.lock();
     request_list_.push_back(request);

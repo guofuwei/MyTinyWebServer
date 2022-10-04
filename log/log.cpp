@@ -7,7 +7,7 @@
 
 #include "block_queue.h"
 
-bool Log::init(char* log_name, int max_buf_size, int max_lines,
+bool Log::Init(char* log_name, int max_buf_size, int max_lines,
                int max_queue_size) {
   max_buf_size_ = max_buf_size;
   buf_ = new char[max_buf_size_];
@@ -23,7 +23,7 @@ bool Log::init(char* log_name, int max_buf_size, int max_lines,
     is_async_ = true;
     log_queue_ = new BlockQueue<std::string>(max_queue_size_);
     pthread_t tid;
-    pthread_create(&tid, NULL, async_write_process, NULL);
+    pthread_create(&tid, NULL, AsyncWriteProcess, NULL);
   }
 
   // 获取系统时间
@@ -55,7 +55,7 @@ bool Log::init(char* log_name, int max_buf_size, int max_lines,
   return true;
 }
 
-bool Log::write_log(int level, const char* format, ...) {
+bool Log::WriteLog(int level, const char* format, ...) {
   struct timeval now = {0, 0};
   gettimeofday(&now, NULL);
   time_t t = now.tv_sec;
@@ -125,7 +125,7 @@ bool Log::write_log(int level, const char* format, ...) {
     log_queue_->push(log_str);
   } else {
     mutex_.lock();
-    sync_write(log_str);
+    SyncWrite(log_str);
     mutex_.unlock();
   }
 }

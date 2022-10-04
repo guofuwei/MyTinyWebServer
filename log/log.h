@@ -36,21 +36,21 @@ class Log {
   Locker mutex_;
 
  public:
-  static Log* getinstance() {
+  static Log* GetInstance() {
     static Log instance;
     return &instance;
   }
 
-  bool init(char* path_name, int max_buf_size = 2560, int max_lines = 1000,
+  bool Init(char* path_name, int max_buf_size = 2560, int max_lines = 1000,
             int max_queue_size = 0);
-  bool write_log(int level, const char* format, ...);
+  bool WriteLog(int level, const char* format, ...);
 
  private:
-  static void* async_write_process(void* args) {
-    Log::getinstance()->async_write();
+  static void* AsyncWriteProcess(void* args) {
+    Log::GetInstance()->AsyncWrite();
   }
 
-  void* async_write() {
+  void* AsyncWrite() {
     string single_log;
     while (log_queue_->pop(single_log)) {
       mutex_.lock();
@@ -59,7 +59,7 @@ class Log {
     }
   }
 
-  void* sync_write(string log_str) {
+  void* SyncWrite(string log_str) {
     mutex_.lock();
     fputs(log_str.c_str(), p_file_);
     mutex_.unlock();
@@ -67,12 +67,12 @@ class Log {
 };
 
 #define LOG_DEBUG(format, ...) \
-  Log::getinstance()->write_log(0, format, ##__VA_ARGS__)
+  Log::GetInstance()->WriteLog(0, format, ##__VA_ARGS__)
 #define LOG_INFO(format, ...) \
-  Log::getinstance()->write_log(1, format, ##__VA_ARGS__)
+  Log::GetInstance()->WriteLog(1, format, ##__VA_ARGS__)
 #define LOG_WARNING(format, ...) \
-  Log::getinstance()->write_log(2, format, ##__VA_ARGS__)
+  Log::GetInstance()->WriteLog(2, format, ##__VA_ARGS__)
 #define LOG_ERROR(format, ...) \
-  Log::getinstance()->write_log(3, format, ##__VA_ARGS__)
+  Log::GetInstance()->WriteLog(3, format, ##__VA_ARGS__)
 
 #endif
