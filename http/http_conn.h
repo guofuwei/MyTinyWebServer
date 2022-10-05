@@ -50,8 +50,25 @@ class HttpConn {
   CHECK_STATE check_state_;
   METHOD request_method_;
 
+  char* http_method_;
+  char* http_url_;
+  char* http_version_;
+  bool is_post_;
+  bool is_keep_alive_;
+  char* host_;
+  unsigned int content_length_;
+  char* request_body_;
+
  private:
   LINE_STATE ParseLine();
+  HTTP_CODE ParseRequestLine(char* text);
+  HTTP_CODE ParseHeader(char* text);
+  HTTP_CODE ParseContent(char* text);
+  HTTP_CODE DoRequest();
+
+  HTTP_CODE DoResponse();
+  HTTP_CODE AddHeader();
+  HTTP_CODE AddContent();
 
  public:
   HttpConn() {}
