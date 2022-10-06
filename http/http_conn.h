@@ -1,6 +1,9 @@
 #ifndef __HTTP_CONNN_H__
 #define __HTTP_CONN_H___
 #include <netinet/in.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/uio.h>
 
 #include "../db/db_connection_pool.h"
 #include "sys/epoll.h"
@@ -11,7 +14,7 @@
 class HttpConn {
  private:
   static const int kFileNameLen = 200;
-  static const int kReadBufferSize = 2048;
+  static const int kReadBufferSize = 4096;
   static const int kWriteBufferSize = 1024;
   enum METHOD { GET, POST };
   enum CHECK_STATE {
@@ -34,7 +37,7 @@ class HttpConn {
  public:
   static int epoll_fd_;
   static int conn_count_;
-  MYSQL* conn;
+  MYSQL* conn_;
 
  private:
   sockaddr_in sockaddr_;
@@ -59,16 +62,29 @@ class HttpConn {
   unsigned int content_length_;
   char* request_body_;
 
+  char real_file_[kFileNameLen];
+  struct stat file_stat_;
+  char* file_address_;
+
+  struct iovec write_vi_[2];
+  int write_vi_count_;
+
+  int bytes_send_;
+  int bytes_have_send_;
+
  private:
   LINE_STATE ParseLine();
   HTTP_CODE ParseRequestLine(char* text);
   HTTP_CODE ParseHeader(char* text);
   HTTP_CODE ParseContent(char* text);
   HTTP_CODE DoRequest();
-
   HTTP_CODE DoResponse();
-  HTTP_CODE AddHeader();
-  HTTP_CODE AddContent();
+  bool AddResponse(const char* format, ...);
+  bool AddStatusLine(int status, const char* title);
+  bool AddHeader(int content_len);
+  bool AddContent(const char* content);
+
+  void UnMap();
 
  public:
   HttpConn() {}
@@ -78,6 +94,7 @@ class HttpConn {
   void Init(sockaddr_in sockaddr, int sockfd);
   void Process();
   HTTP_CODE ProcessRead();
+  bool ProcessWrite(HTTP_CODE read_code);
   void CloseConn();
   bool Read();
   bool Write();

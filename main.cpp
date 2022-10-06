@@ -3,7 +3,7 @@
 #include <sys/epoll.h>
 #include <sys/socket.h>
 
-#include "./http_conn/http_conn.h"
+#include "../http/http_conn.h"
 
 #define MAX_EVENT_NUM 10000
 
@@ -36,9 +36,7 @@ int main() {
         socklen_t client_len = sizeof(client_addr);
         int client_fd =
             accept(listenfd, (struct sockaddr*)&client_addr, &client_len);
-        int ret = http_conns[client_fd].init(client_addr, client_fd);
-        if (!ret) {
-        }
+        http_conns[client_fd].Init(client_addr, client_fd);
       }
     }
   }
