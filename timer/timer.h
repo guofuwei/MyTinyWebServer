@@ -8,7 +8,7 @@ class Timer;
 struct ClientData {
   sockaddr_in sockaddr_;
   int sockfd_;
-  Timer timer;
+  Timer* timer_;
 };
 
 class Timer {

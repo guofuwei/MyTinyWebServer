@@ -8,8 +8,7 @@ ConnectionPool* ConnectionPool::GetInstance() {
 }
 
 void ConnectionPool::Init(unsigned int port, string database, string user,
-                          string password, unsigned int max_conn = 100,
-                          string host = "localhost") {
+                          string password, unsigned int max_conn, string host) {
   if (max_conn <= 0) {
     LOG_ERROR("%s:%s", "db_connection_pool", "max_conn must be positive");
     exit(1);

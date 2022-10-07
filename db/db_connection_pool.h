@@ -35,7 +35,7 @@ class ConnectionPool {
  public:
   static ConnectionPool* GetInstance();
   void Init(unsigned int port, string database, string user, string password,
-            unsigned int max_conn, string host);
+            unsigned int max_conn = 8, string host = "localhost");
 
   MYSQL* GetConnection();
   bool ReleaseConnection(MYSQL* conn);

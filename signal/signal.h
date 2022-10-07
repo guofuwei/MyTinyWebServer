@@ -18,11 +18,4 @@ bool AddSignal(int signal, void(handler)(int), bool restart = true) {
   return sigaction(signal, &sa, NULL) != -1;
 }
 
-void SignalHandler(int signal, int sockfd) {
-  int save_errno = errno;
-  int msg = signal;
-  send(sockfd, (char*)&msg, 1, 0);
-  errno = save_errno;
-}
-
 #endif
