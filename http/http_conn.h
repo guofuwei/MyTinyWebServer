@@ -84,12 +84,14 @@ class HttpConn {
   bool AddHeader(int content_len);
   bool AddContent(const char* content);
 
+  // 取消文件的内存映射
   void UnMap();
 
  public:
   HttpConn() {}
   ~HttpConn() {}
 
+  void InitDbRet(ConnectionPool* pool);
   void Init();
   void Init(sockaddr_in sockaddr, int sockfd);
   void Process();

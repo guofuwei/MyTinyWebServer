@@ -8,8 +8,11 @@
 #include "../lock/locker.h"
 #include "../log/log.h"
 
+// 数据库用户的map
 map<string, string> USERS;
+// USERS使用的互斥锁
 Locker USERLOCK;
+// 前端页面的根目录
 const char* ROOTFILE = "/home/hanshan/MyTinyWebServer";
 
 //定义http响应的一些状态信息
@@ -27,6 +30,34 @@ const char* CONTENT404 = "The requested file was not found on this server.\n";
 const char* CONTENT500 =
     "There was an unusual problem serving the request file.\n";
 const char* CONTENT_EMPTY = "<html><body></body></html>";
+
+void HttpConn::InitDbRet(ConnectionPool* pool) {
+  //先从连接池中取一个连接
+  MYSQL* mysql = NULL;
+  ConnectionRAII mysqlcon(&mysql, pool);
+
+  //在user表中检索username，passwd数据，浏览器端输入
+  if (mysql_query(mysql, "SELECT username,passwd FROM user")) {
+    LOG_ERROR("%s:%s", "main.cpp", "init db ret error");
+    exit(-1);
+  }
+
+  //从表中检索完整的结果集
+  MYSQL_RES* result = mysql_store_result(mysql);
+
+  //返回结果集中的列数
+  int num_fields = mysql_num_fields(result);
+
+  //返回所有字段结构的数组
+  MYSQL_FIELD* fields = mysql_fetch_fields(result);
+
+  //从结果集中获取下一行，将对应的用户名和密码，存入map中
+  while (MYSQL_ROW row = mysql_fetch_row(result)) {
+    string temp1(row[0]);
+    string temp2(row[1]);
+    USERS[temp1] = temp2;
+  }
+}
 
 void HttpConn::Init() {
   memset(read_buffer_, '\0', kReadBufferSize);

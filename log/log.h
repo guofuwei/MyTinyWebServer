@@ -41,8 +41,8 @@ class Log {
     return &instance;
   }
 
-  bool Init(char* path_name, int max_buf_size = 2560, int max_lines = 1000,
-            int max_queue_size = 0);
+  bool Init(char* log_name, int max_queue_size = 0, int max_buf_size = 2560,
+            int max_lines = 1000);
   bool WriteLog(int level, const char* format, ...);
 
  private:
