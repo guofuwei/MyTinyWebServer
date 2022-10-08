@@ -1,9 +1,9 @@
 #include <netinet/in.h>
+#include <stdio.h>
 #include <string.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
 
-#include "./epoll/epoll.h"
 #include "./http/http_conn.h"
 #include "./log/log.h"
 #include "./signal/signal.h"
@@ -21,6 +21,14 @@ static int pipefd[2];
 static int epollfd = -1;
 // 定时器链表
 static TimerList timer_list;
+
+extern int SetNonBlocking(int fd);
+
+extern void AddFd(int epoll_fd, int fd, bool is_shot);
+
+extern void RemoveFd(int epoll_fd, int fd);
+
+extern void ModFd(int epoll_fd, int fd, int ev);
 
 void SignalHandler(int signal) {
   int save_errno = errno;
@@ -80,7 +88,7 @@ int main() {
   HttpConn::epoll_fd_ = epollfd;
 
   // 创建socketpair，注册SIGALRM,SIGTERM信号
-  int ret = socketpair(PF_UNIX, SOCK_STREAM, 0, pipefd);
+  ret = socketpair(PF_UNIX, SOCK_STREAM, 0, pipefd);
   if (ret == -1) {
     LOG_ERROR("%s:%s", "main.cpp", "create socketpair error");
     exit(-1);
@@ -101,7 +109,6 @@ int main() {
 
   // 发送SIGALRM信号
   alarm(TIMESLOT);
-
   while (!server_stop) {
     int wait_number = epoll_wait(epollfd, events, MAX_EVENT_NUM, -1);
     if (wait_number < 0 && errno != EINTR) {

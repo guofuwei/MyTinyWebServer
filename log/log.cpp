@@ -9,6 +9,7 @@
 
 bool Log::Init(char* log_name, int max_queue_size, int max_buf_size,
                int max_lines) {
+  // 初始化各种数据
   max_buf_size_ = max_buf_size;
   buf_ = new char[max_buf_size_];
   memset(buf_, '\0', max_buf_size_);

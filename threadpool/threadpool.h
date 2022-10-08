@@ -60,7 +60,7 @@ ThreadPool<T>::ThreadPool(ConnectionPool* db_pool, unsigned int max_thread,
 template <typename T>
 void* ThreadPool<T>::Worker(void* arg) {
   ThreadPool* pool = (ThreadPool*)arg;
-  pool->run();
+  pool->Run();
   return pool;
 }
 
@@ -75,9 +75,9 @@ void ThreadPool<T>::Run() {
     }
     T* request = request_list_.front();
     request_list_.pop_front();
-    mutex.unlock();
+    mutex_.unlock();
     if (!request) continue;
-    ConnectionRAII mysqlconn(&request->db, db_pool_);
+    ConnectionRAII mysqlconn(&request->conn_, db_pool_);
     request->Process();
   }
 }

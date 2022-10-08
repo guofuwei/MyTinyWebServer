@@ -1,4 +1,4 @@
-#ifndef __LOG__H__
+#ifndef __LOG_H__
 #define __LOG_H__
 #include <iostream>
 
@@ -22,43 +22,48 @@ class Log {
   }
 
  private:
-  char log_name_[MAX_LOG_NAME];
-  char path_name_[MAX_PATH_NAME];
-  int max_buf_size_;
-  char* buf_;
-  int max_lines_;
-  int cur_lines_;
-  int day_;
-  FILE* p_file_;
-  bool is_async_;
-  BlockQueue<string>* log_queue_;
-  int max_queue_size_;
-  Locker mutex_;
+  char log_name_[MAX_LOG_NAME];    // 日志名称
+  char path_name_[MAX_PATH_NAME];  // 日志路径
+  int max_buf_size_;               // 最大buffer大小
+  char* buf_;                      // buffer
+  int max_lines_;                  // 最大行数
+  int cur_lines_;                  // 现在的行数
+  int day_;                        // 当前日期
+  FILE* p_file_;                   // 文件指针
+  bool is_async_;                  // 是否异步
+  BlockQueue<string>* log_queue_;  // 日志队列
+  int max_queue_size_;             // 最大队列长度
+  Locker mutex_;                   // 互斥锁
 
  public:
+  // 单例模式
   static Log* GetInstance() {
     static Log instance;
     return &instance;
   }
-
+  // 初始化
   bool Init(char* log_name, int max_queue_size = 0, int max_buf_size = 2560,
             int max_lines = 1000);
+  // 写日志
   bool WriteLog(int level, const char* format, ...);
 
  private:
+  // 异步写日志，工作线程
   static void* AsyncWriteProcess(void* args) {
     Log::GetInstance()->AsyncWrite();
   }
-
+  // 异步写日志
   void* AsyncWrite() {
     string single_log;
     while (log_queue_->pop(single_log)) {
       mutex_.lock();
+      // 将日志直接放到文件指针中
       fputs(single_log.c_str(), p_file_);
       mutex_.unlock();
     }
   }
 
+  // 同步写日志
   void* SyncWrite(string log_str) {
     mutex_.lock();
     fputs(log_str.c_str(), p_file_);
@@ -66,6 +71,7 @@ class Log {
   }
 };
 
+// 定义各种LOG类型
 #define LOG_DEBUG(format, ...) \
   Log::GetInstance()->WriteLog(0, format, ##__VA_ARGS__)
 #define LOG_INFO(format, ...) \

@@ -1,9 +1,11 @@
-#ifndef __HTTP_CONNN_H__
-#define __HTTP_CONN_H___
+#ifndef __HTTP_CONN_H__
+#define __HTTP_CONN_H__
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
+#include <unistd.h>
 
 #include "../db/db_connection_pool.h"
 #include "sys/epoll.h"

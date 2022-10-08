@@ -1,0 +1,2 @@
+server:	main.cpp timer/timer_list.cpp log/log.cpp http/http_conn.cpp db/db_connection_pool.cpp
+	g++ -o server timer/timer_list.cpp log/log.cpp http/http_conn.cpp db/db_connection_pool.cpp main.cpp -lpthread -lmysqlclient

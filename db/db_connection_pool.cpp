@@ -2,11 +2,6 @@
 
 #include "../log/log.h"
 
-ConnectionPool* ConnectionPool::GetInstance() {
-  static ConnectionPool conn_pool;
-  return &conn_pool;
-}
-
 void ConnectionPool::Init(unsigned int port, string database, string user,
                           string password, unsigned int max_conn, string host) {
   if (max_conn <= 0) {

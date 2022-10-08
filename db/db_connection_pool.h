@@ -1,7 +1,7 @@
 #ifndef __DB_CONNECTION_POOL__
 #define __DB_CONNECTION_POOL__
 
-#include <mysql.h>
+#include <mysql/mysql.h>
 
 #include <list>
 #include <string>
@@ -33,7 +33,10 @@ class ConnectionPool {
   ~ConnectionPool() { DestroyPool(); }
 
  public:
-  static ConnectionPool* GetInstance();
+  static ConnectionPool* GetInstance() {
+    static ConnectionPool conn_pool;
+    return &conn_pool;
+  }
   void Init(unsigned int port, string database, string user, string password,
             unsigned int max_conn = 8, string host = "localhost");
 
