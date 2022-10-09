@@ -55,7 +55,6 @@ class HttpConn {
   CHECK_STATE check_state_;
   METHOD request_method_;
 
-  char* http_method_;
   char* http_url_;
   char* http_version_;
   bool is_post_;

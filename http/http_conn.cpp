@@ -129,7 +129,9 @@ void HttpConn::Init() {
   checked_index_ = 0;
   line_start_index_ = 0;
 
-  http_method_ = NULL;
+  check_state_ = CHECK_STATE_REQUESTLINE;
+  request_method_ = GET;
+
   http_url_ = NULL;
   http_version_ = NULL;
   host_ = NULL;
@@ -258,11 +260,11 @@ HttpConn::HTTP_CODE HttpConn::ParseRequestLine(char* text) {
   *http_url_ = '\0';
   http_url_++;
   http_url_ += strspn(http_url_, " \t");
-  if (strcasecmp(http_url_, "GET") == 0) {
-    http_method_ = "GET";
+  if (strcasecmp(text, "GET") == 0) {
+    request_method_ = GET;
     is_post_ = false;
-  } else if (strcasecmp(http_method_, "POST") == 0) {
-    http_method_ = "POST";
+  } else if (strcasecmp(text, "POST") == 0) {
+    request_method_ = POST;
     is_post_ = true;
   } else {
     LOG_WARNING("%s:%ss", "http conn", "only support Get && Post");

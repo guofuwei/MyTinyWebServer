@@ -49,7 +49,7 @@ int main() {
   signal(SIGPIPE, SIG_IGN);
 
   // 开启监听套接字
-  int port = 10000;
+  int port = 11000;
   int listenfd = socket(AF_INET, SOCK_STREAM, 0);
   struct sockaddr_in address;
   bzero(&address, sizeof(address));
@@ -70,14 +70,14 @@ int main() {
   AddFd(epollfd, listenfd, false);
 
   // 在主函数中定义一些资源
-
   // 定义日志系统,单例模式
   Log* server_log = Log::GetInstance();
-  server_log->Init("ServerLog", 8);
+  server_log->Init("ServerLog", 0);
+  LOG_INFO("%s", "Init success");
 
   // 定义数据库连接池，单例模式
   ConnectionPool* dbpool = ConnectionPool::GetInstance();
-  dbpool->Init(3306, "mywebserver", "test", "123456");
+  dbpool->Init(3306, "mywebserver", "root", "");
 
   // 定义线程池
   ThreadPool<HttpConn>* threadpool = new ThreadPool<HttpConn>(dbpool, 4);

@@ -16,7 +16,7 @@ void ConnectionPool::Init(unsigned int port, string database, string user,
   mutex_.lock();
   for (int i = 0; i < max_conn; i++) {
     MYSQL* conn = NULL;
-    conn = mysql_init(NULL);
+    conn = mysql_init(conn);
     if (conn == NULL) {
       LOG_ERROR("Error %u: %s\n", mysql_errno(conn), mysql_error(conn));
       exit(1);
@@ -29,7 +29,7 @@ void ConnectionPool::Init(unsigned int port, string database, string user,
     conn_list_.push_back(conn);
     FreeConn++;
   }
-  sem_ = FreeConn;
+  sem_ = Sem(FreeConn);
   MaxConn = FreeConn;
   mutex_.unlock();
 }

@@ -98,7 +98,7 @@ bool Log::WriteLog(int level, const char* format, ...) {
       day_ = my_tm.tm_mday;
       cur_lines_ = 0;
     } else {
-      snprintf(new_log, 255, "%s%s%s.%lld", path_name_, tail, log_name_,
+      snprintf(new_log, 255, "%s%s%s.%d", path_name_, tail, log_name_,
                cur_lines_ / max_lines_);
     }
     p_file_ = fopen(new_log, "a");

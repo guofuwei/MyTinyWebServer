@@ -44,6 +44,8 @@ ThreadPool<T>::ThreadPool(ConnectionPool* db_pool, unsigned int max_thread,
   }
   kMaxRequest = max_request;
   kMaxThread = max_thread;
+  is_stop_ = false;
+  db_pool_ = db_pool;
   pthread_t_array_ = new pthread_t[max_thread];
   for (int i = 0; i < max_thread; i++) {
     if (pthread_create(&pthread_t_array_[i], NULL, Worker, this) != 0) {
